@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+<script type="text/javascript">
+var a = '0xf';
+console.log(parseInt(a));// 15 这里因 0x是16进制的前缀所以这里识别成了 16 进制的数据，转换结果为 15
+var b = "070";
+console.log(parseInt(b));// 新版本为 70，老版本部分浏览器 会识别成 56 因为 0是 八进制的标示，这里按照了八进制进行了处理  
+</script>	
+</body>
+</html>
