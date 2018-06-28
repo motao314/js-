@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Document</title>
+<style type="text/css">
+#box {
+	border: 1px solid #000;
+	height: 400px;
+	overflow: auto;
+}	
+.file {
+	position: relative;
+	float: left;
+	padding: 20px;
+	margin: 10px;
+	width: 80px;
+	border: 1px solid transparent;
+	background: #f1f1f1;
+}
+.fileActive {
+	border-color: #000;
+	background: #fff;
+}
+.file span {
+	display: block;
+	font: 14px/30px "宋体";
+	text-align: center;
+}
+.file i {
+	display: none;
+	position: absolute;
+	left: 1px;
+	top: 1px;
+	border: 1px solid #000;
+	width: 16px;
+	height: 16px;
+}
+.checked {
+	background: url('img/checked.png');
+}
+.fileActive i {
+	display: block;
+}
+.selection {
+	position: fixed;
+	border: 1px solid #0767dd;
+	background: rgba(122, 179, 250, .2)
+}
+</style>
+</head>
+<body>
+<button type="button" id="createBtn">新建文件夹</button>
+<label><input type="checkbox" id="checkedAll"> 全选</label>
+<div id="box">
+	<!-- <div class="file fileActive">
+		<img src="img/folder-b.png">
+		<span>新建文件夹</span>
+		<i class="checked"></i>
+	</div> -->
+</div>
+<script type="text/javascript">
+// https://study.miaov.com/study/show/chapter/151 ES6 教程
+(function(){
+	let createBtn = document.querySelector('#createBtn');
+	let box = document.querySelector('#box');
+	let file = document.querySelectorAll('.file');
+	let checkedAll = document.querySelector('#checkedAll');
+	// 创建文件夹
+	createBtn.onclick = function(){
+		let file = document.createElement("div");
+		file.className = "file";
+		file.innerHTML = `
+			<img src="img/folder-b.png">
+			<span>新建文件夹</span>
+			<i></i>
+		`; 
+		box.appendChild(file);
+		checkedAll.checked = false;
+	};
+	createBtn.onmousedown = function(e){
+		e.cancelBubble = true;//阻止冒泡
+	};
+
+	// 添加事件
+	box.addEventListener('mouseover', function(e) {
+		let file = null;
+		//判断这个元素上是否有添加这个 classs
+		if(e.target.classList.contains("file")){
+			file  =	e.target;
+		} else if(e.target.parentNode.classList.contains("file")){
+			file  =	e.target.parentNode;
+		} 
+		if(file){
+			file.classList.add("fileActive");
+		}
+	});
+	box.addEventListener('click', function(e) {
+		if(e.target.tagName == "I"){
+			e.target.classList.toggle("checked");
+			setCheckedAll();		
+		}
+	});
+	box.addEventListener('mouseout', function(e) {
+		let file = null;
+		if(e.target.classList.contains("file")){
+			file  =	e.target;
+		} else if(e.target.parentNode.classList.contains("file")){
+			file  =	e.target.parentNode;
+		} 
+		if(file){
+			let checked = file.querySelector('i');
+			if(!checked.classList.contains("checked")){
+				file.classList.remove("fileActive")
+			}
+		}
+	});
+	// 全选和全不选
+	checkedAll.onchange = function(){
+		let files = document.querySelectorAll('.file');
+		files.forEach(function(item){
+			if(checkedAll.checked){
+				let checked = item.querySelector('i');
+				item.classList.add("fileActive");
+				checked.classList.add("checked");	
+			} else {
+				let checked = item.querySelector('i');
+				item.classList.remove("fileActive");
+				checked.classList.remove("checked");	
+			}
+		});
+	};
+	function setCheckedAll(){
+		let filesChecked = document.querySelectorAll('.file>i');
+		for(let i = 0; i < filesChecked.length; i++){
+			if(!filesChecked[i].classList.contains("checked")){
+				checkedAll.checked = false;
+				return ;
+			}
+		}
+
+		checkedAll.checked = true;
+	}
+	// 框选
+		// 画框
+	document.onmousedown = function(e){
+		let selection = document.createElement("div");
+		let files = document.querySelectorAll('.file');
+		let startClient = {
+			x: e.clientX,
+			y: e.clientY
+		};
+		selection.className = "selection";
+		document.body.appendChild(selection);
+		document.onmousemove = function(e){
+			let nowClient = {
+				x: e.clientX,
+				y: e.clientY
+			}; 
+			selection.style.width = Math.abs(nowClient.x - startClient.x) + "px";
+			selection.style.height = Math.abs(nowClient.y - startClient.y) + "px";
+			selection.style.left = Math.min(nowClient.x, startClient.x) + "px";
+			selection.style.top = Math.min(nowClient.y, startClient.y) + "px";
+			files.forEach(function(item){
+				let checked = item.querySelector('i');
+				if(isCollision(item,selection)){
+					item.classList.add("fileActive");
+					checked.classList.add("checked");
+				} else {
+					item.classList.remove("fileActive");
+					checked.classList.remove("checked");
+				}
+				setCheckedAll();
+			});
+		}
+		document.onmouseup = function(){
+			document.body.removeChild(selection);
+			document.onmousemove = null;
+			document.onmouseup = null;
+		}  
+		return false;
+	}
+
+	// 碰撞检测
+	function isCollision(el,el2){
+		let elRect = el.getBoundingClientRect();
+		let elRect2 = el2.getBoundingClientRect();
+		// elRect.top > elRect2.bottom
+		// elRect2.top > elRect.bottom
+		// elRect2.left > elRect.right
+		// elRect.left > elRect2.right
+		if(elRect.top > elRect2.bottom
+		||elRect2.top > elRect.bottom
+		||elRect2.left > elRect.right
+		||elRect.left > elRect2.right){
+			return false;
+		}
+		return true;
+	}
+})();	
+</script>	
+</body>
+</html>
